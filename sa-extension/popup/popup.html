@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    width: 100%;
+    min-height: 100vh;
+    background: #0f1117;
+    color: #e0e0e0;
+    font-family: 'Malgun Gothic', sans-serif;
+    font-size: 13px;
+  }
+
+  /* ── 헤더 ── */
+  .header {
+    background: #161b27;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid #1e2535;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-icon { font-size: 20px; }
+  .header-title { font-size: 15px; font-weight: 700; color: #6eb5ff; letter-spacing: -0.3px; }
+  .header-version { font-size: 10px; color: #3a4560; margin-left: auto; }
+
+  /* ── 섹션 공통 ── */
+  .section {
+    padding: 14px 18px;
+    border-bottom: 1px solid #1a1f2e;
+  }
+  .section-label {
+    font-size: 10px;
+    color: #4a5470;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  /* ── 상태 박스 ── */
+  .status-box {
+    background: #0a0d15;
+    border: 1px solid #1e2535;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #606880;
+    line-height: 1.5;
+    min-height: 38px;
+  }
+  .status-box.info    { color: #6eb5ff; border-color: #1a3050; }
+  .status-box.success { color: #3ddc84; border-color: #1a3d2a; }
+  .status-box.warn    { color: #f5a623; border-color: #3d2e10; }
+  .status-box.error   { color: #ff5f5f; border-color: #3d1a1a; }
+
+  /* ── 통계 ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .stat {
+    background: #0a0d15;
+    border: 1px solid #1e2535;
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .stat .num  { font-size: 20px; font-weight: 700; color: #e0e0e0; }
+  .stat .lbl  { font-size: 9px; color: #404860; margin-top: 3px; letter-spacing: 0.3px; }
+  .stat.curr  { border-color: #1a3050; }
+  .stat.curr  .num { color: #6eb5ff; }
+  .stat.done  { border-color: #1a3d2a; }
+  .stat.done  .num { color: #3ddc84; }
+  .stat.error { border-color: #3d1a1a; }
+  .stat.error .num { color: #ff5f5f; }
+
+  /* ── 현재 계정 ── */
+  .account-card {
+    background: #0a0d15;
+    border: 1px solid #1e2535;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #606880;
+    line-height: 1.7;
+  }
+  .account-card .acc-id   { color: #e0e0e0; font-weight: 700; font-size: 13px; }
+  .account-card .acc-meta { color: #4a5470; font-size: 11px; }
+  .account-card .acc-status { color: #3a4560; font-size: 10px; }
+
+  /* ── 설정 ── */
+  .setting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .setting-row:last-child { margin-bottom: 0; }
+  .setting-label {
+    font-size: 11px;
+    color: #4a5470;
+    min-width: 80px;
+  }
+  .inp {
+    background: #0a0d15;
+    border: 1px solid #1e2535;
+    border-radius: 6px;
+    color: #c0c8e0;
+    font-size: 12px;
+    padding: 5px 8px;
+    font-family: 'Malgun Gothic', sans-serif;
+    transition: border-color 0.15s;
+  }
+  .inp:focus { outline: none; border-color: #2a4a70; }
+  .inp-date { flex: 1; }
+  .inp-num  { width: 64px; text-align: center; }
+  .sep { color: #2a3045; font-size: 12px; }
+
+  /* ── 파일 업로드 ── */
+  .file-wrap {
+    background: #0a0d15;
+    border: 1px dashed #1e2535;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    display: block;
+  }
+  .file-wrap:hover { border-color: #2a4a70; background: #0d1020; }
+  .file-wrap input { display: none; }
+  .file-wrap .file-hint { color: #3a4560; font-size: 11px; }
+  .file-wrap .file-name { color: #6eb5ff; font-size: 11px; margin-top: 4px; font-weight: 600; }
+
+  /* ── 버튼 ── */
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Malgun Gothic', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover   { opacity: 0.88; }
+  .btn:active  { opacity: 0.7; transform: scale(0.97); }
+  .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+
+  .btn-start { background: #1565c0; color: #fff; }
+  .btn-stop  { background: #212535; color: #606880; border: 1px solid #1e2535; }
+  .btn-stop:not(:disabled) { color: #c0c8e0; }
+  .btn-reset { background: #1a1035; color: #7060b0; border: 1px solid #2a1f55; }
+  .btn-reset:hover { color: #a090d0; border-color: #3a2f75; }
+  .btn-pause  { background: #1a2a10; color: #70b060; border: 1px solid #2a4520; }
+  .btn-pause:not(:disabled):hover  { color: #a0d090; border-color: #3a6530; }
+  .btn-resume { background: #102a1a; color: #3ddc84; border: 1px solid #1a5530; }
+  .btn-resume:not(:disabled):hover { color: #6eeaaa; border-color: #2a7550; }
+
+  /* 실행 중 start 버튼 펄스 */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .btn-start.running { background: #0d3a1a; color: #3ddc84; border: 1px solid #1a5530; animation: pulse 2s infinite; }
+
+  /* ── 로그 ── */
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .log-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .log-list::-webkit-scrollbar { width: 4px; }
+  .log-list::-webkit-scrollbar-track { background: transparent; }
+  .log-list::-webkit-scrollbar-thumb { background: #1e2535; border-radius: 4px; }
+  .log-item {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #0a0d15;
+    color: #606880;
+    line-height: 1.45;
+  }
+  .log-item .log-time { color: #2a3045; margin-right: 4px; }
+  .log-item.info    { color: #6eb5ff; }
+  .log-item.success { color: #3ddc84; }
+  .log-item.warn    { color: #f5a623; }
+  .log-item.error   { color: #ff5f5f; }
+
+  .btn-copy {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: #161b27;
+    border: 1px solid #1e2535;
+    color: #4a5470;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Malgun Gothic', sans-serif;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-copy:hover { border-color: #2a4a70; color: #6eb5ff; }
+
+  /* ── 업데이트 알림 배너 ── */
+  .update-banner {
+    background: #1a2a10;
+    border: 1px solid #3ddc84;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 10px 18px 0;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #3ddc84;
+  }
+  .update-banner.visible { display: flex; }
+  .btn-update {
+    margin-left: auto;
+    background: #3ddc84;
+    color: #0a1a0a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Malgun Gothic', sans-serif;
+  }
+  .btn-update:hover { opacity: 0.85; }
+
+  /* ── 예약 상태 ── */
+  .schedule-status { font-size: 11px; color: #4a5470; margin-top: 8px; padding: 5px 2px; }
+  .schedule-status.active { color: #f5a623; }
+  .btn-schedule { background: #1a2535; color: #6eb5ff; border: 1px solid #1a3050; }
+  .btn-schedule-cancel { background: #1a1035; color: #7060b0; border: 1px solid #2a1f55; }
+  .btn-schedule-cancel:not(:disabled) { color: #a090d0; }
+
+  /* ── 단계별 실행 버튼 ── */
+  .step-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .btn-step {
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 10px 8px;
+    cursor: pointer;
+    font-family: 'Malgun Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-align: left;
+    line-height: 1.5;
+    transition: opacity 0.15s, transform 0.1s;
+    background: #0a0d15;
+  }
+  .btn-step:hover  { opacity: 0.85; }
+  .btn-step:active { transform: scale(0.97); }
+  .btn-step:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+  .btn-step .step-num  { font-size: 9px; letter-spacing: 0.6px; opacity: 0.6; display: block; margin-bottom: 2px; }
+  .btn-step .step-name { font-size: 12px; display: block; }
+  .btn-step .step-desc { font-size: 10px; opacity: 0.55; display: block; margin-top: 2px; font-weight: 400; }
+
+  .btn-step-1 { color: #6eb5ff; border-color: #1a3050; }
+  .btn-step-1:not(:disabled):hover { border-color: #2a5080; background: #0d1828; }
+  .btn-step-2 { color: #5dd9c1; border-color: #0d3530; }
+  .btn-step-2:not(:disabled):hover { border-color: #1a5545; background: #091815; }
+  .btn-step-3 { color: #f5a623; border-color: #3d2e10; }
+  .btn-step-3:not(:disabled):hover { border-color: #5d4e20; background: #1a1508; }
+  .btn-step-4 { color: #3ddc84; border-color: #1a3d2a; }
+  .btn-step-4:not(:disabled):hover { border-color: #2a5d3a; background: #081a10; }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <span class="header-icon">🤖</span>
+  <span class="header-title">SA 스마트스토어 자동화</span>
+  <span class="header-version" id="header-version">v2.15.0</span>
+</div>
+<!-- 업데이트 알림 배너 -->
+<div class="update-banner" id="update-banner">
+  <span>🔔</span>
+  <span id="update-text">새 버전 사용 가능</span>
+  <button class="btn-update" id="btn-update">다운로드</button>
+</div>
+
+<!-- 상태 -->
+<div class="section">
+  <div class="section-label">현재 상태</div>
+  <div class="status-box" id="status-box">대기 중 — 엑셀 파일을 로드하세요</div>
+  <div id="elapsed-bar" style="display:none;margin-top:8px;padding:6px 10px;background:#0a0d15;border:1px solid #1a3050;border-radius:7px;display:flex;align-items:center;gap:6px;">
+    <span style="font-size:14px;">⏱</span>
+    <span style="font-size:11px;color:#4a5470;">소요 시간</span>
+    <span id="elapsed-time" style="font-size:16px;font-weight:700;color:#6eb5ff;margin-left:auto;letter-spacing:-0.3px;">0분 0초</span>
+  </div>
+  <div class="stats">
+    <div class="stat curr">
+      <div class="num" id="stat-current">0</div>
+      <div class="lbl">현재</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="stat-total">0</div>
+      <div class="lbl">전체</div>
+    </div>
+    <div class="stat done">
+      <div class="num" id="stat-done">0</div>
+      <div class="lbl">완료</div>
+    </div>
+    <div class="stat error">
+      <div class="num" id="stat-error">0</div>
+      <div class="lbl">오류</div>
+    </div>
+  </div>
+</div>
+
+<!-- 처리 계정 -->
+<div class="section">
+  <div class="section-label">처리 계정</div>
+  <div class="account-card" id="current-account">
+    <span style="color:#2a3045">없음</span>
+  </div>
+</div>
+
+<!-- 설정 -->
+<div class="section">
+  <div class="section-label">자동화 설정</div>
+
+  <div class="setting-row" style="margin-bottom:12px">
+    <span class="setting-label">작업 모드</span>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:#c0c8e0">
+      <input type="radio" name="work-mode" id="mode-today" value="today" checked style="accent-color:#6eb5ff"> 오늘 리스트
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:#c0c8e0;margin-left:12px">
+      <input type="radio" name="work-mode" id="mode-past" value="past" style="accent-color:#6eb5ff"> 지난 날짜 리스트
+    </label>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">기간</span>
+    <input type="date" id="date-from" class="inp inp-date">
+    <span class="sep">~</span>
+    <input type="date" id="date-to" class="inp inp-date">
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">셔플러 페이지</span>
+    <input type="number" id="pages-tab2" value="2" min="1" max="20" class="inp inp-num">
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">옵티마이저 페이지</span>
+    <input type="number" id="pages-tab3" value="2" min="1" max="20" class="inp inp-num">
+  </div>
+</div>
+
+<!-- 예약 실행 -->
+<div class="section">
+  <div class="section-label">예약 실행</div>
+  <div class="setting-row">
+    <span class="setting-label">예약 시간</span>
+    <input type="datetime-local" id="schedule-time" class="inp" style="flex:1">
+  </div>
+  <div class="btn-row" style="margin-top:8px">
+    <button class="btn btn-schedule" id="btn-schedule-set">📅 예약 설정</button>
+    <button class="btn btn-schedule-cancel" id="btn-schedule-cancel" disabled>✕ 취소</button>
+  </div>
+  <div class="schedule-status" id="schedule-status">예약 없음</div>
+</div>
+
+<!-- 단계별 실행 -->
+<div class="section">
+  <div class="section-label">단계별 실행</div>
+  <div class="step-grid">
+    <button class="btn-step btn-step-1" id="btn-step-1" disabled>
+      <span class="step-num">STEP 1</span>
+      <span class="step-name">스마트스토어 로그인</span>
+      <span class="step-desc">현재 계정으로 SS 로그인</span>
+    </button>
+    <button class="btn-step btn-step-2" id="btn-step-2" disabled>
+      <span class="step-num">STEP 2</span>
+      <span class="step-name">퍼센티 복사 (셔플러)</span>
+      <span class="step-desc">날짜 필터 → 상품 복사</span>
+    </button>
+    <button class="btn-step btn-step-3" id="btn-step-3" disabled>
+      <span class="step-num">STEP 3</span>
+      <span class="step-name">이름수정 + 그룹이동</span>
+      <span class="step-desc">숫자 제거 → 그룹2 이동</span>
+    </button>
+    <button class="btn-step btn-step-4" id="btn-step-4" disabled>
+      <span class="step-num">STEP 4</span>
+      <span class="step-name">마켓 업로드</span>
+      <span class="step-desc">그룹2 → 네이버 업로드</span>
+    </button>
+  </div>
+</div>
+
+<!-- 계정 파일 + 컨트롤 -->
+<div class="section">
+  <div class="section-label">계정 파일</div>
+  <label class="file-wrap" id="file-wrap">
+    <input type="file" id="excel-input" accept=".xlsx,.xls">
+    <div class="file-hint">📂 엑셀 파일 클릭하여 선택</div>
+    <div class="file-name" id="file-name"></div>
+  </label>
+
+  <div class="btn-row">
+    <button class="btn btn-start" id="btn-start" disabled>▶ 시작</button>
+    <button class="btn btn-stop"  id="btn-stop"  disabled>■ 정지</button>
+    <button class="btn btn-reset" id="btn-reset">↺ 리셋</button>
+  </div>
+  <div class="btn-row" style="margin-top:6px;">
+    <button class="btn btn-pause"  id="btn-pause"  disabled>⏸ 일시정지</button>
+    <button class="btn btn-resume" id="btn-resume" disabled>▶ 재시작</button>
+  </div>
+</div>
+
+<!-- 실행 로그 -->
+<div class="section">
+  <div class="log-header">
+    <span class="section-label" style="margin-bottom:0">실행 로그</span>
+    <button class="btn-copy" id="btn-copy-log">복사</button>
+  </div>
+  <div class="log-list" id="log-list">
+    <div class="log-item">로그 없음</div>
+  </div>
+</div>
+
+<script src="../assets/xlsx.full.min.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

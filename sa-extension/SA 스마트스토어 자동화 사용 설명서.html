@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SA 스마트스토어 자동화 사용 설명서</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #222;
+    background: #f8f9fa;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a3a6b;
+    border-bottom: 3px solid #1a3a6b;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+  }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 40px; }
+  .badge {
+    display: inline-block;
+    background: #1565c0;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a6b;
+    margin: 36px 0 14px;
+    padding-left: 12px;
+    border-left: 4px solid #1565c0;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 10px; }
+
+  .step-box {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .step-num {
+    display: inline-block;
+    background: #1565c0;
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 26px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .step-desc { color: #444; padding-left: 34px; }
+  .step-desc li { margin-bottom: 4px; }
+
+  .img-placeholder {
+    background: #eef2fa;
+    border: 1px dashed #aab8d8;
+    border-radius: 8px;
+    text-align: center;
+    padding: 18px;
+    color: #7a8fba;
+    font-size: 12px;
+    margin: 10px 0 4px 34px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+  }
+  th {
+    background: #1565c0;
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f7fd; }
+  td:first-child { font-weight: 700; color: #1a3a6b; white-space: nowrap; }
+
+  .excel-table th { background: #217346; }
+
+  .warn-box {
+    background: #fff8e1;
+    border: 1px solid #f5c842;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #7a5800;
+  }
+  .warn-box b { color: #b06000; }
+
+  .info-box {
+    background: #e8f0fe;
+    border: 1px solid #90aae0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #1a3a6b;
+  }
+
+  .success-box {
+    background: #e8f5e9;
+    border: 1px solid #81c784;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #1b5e20;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 14px 0;
+  }
+  .flow-item {
+    background: #1565c0;
+    color: #fff;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .flow-arr { color: #888; font-size: 18px; }
+
+  .qa-item { margin-bottom: 18px; }
+  .qa-q { font-weight: 700; color: #c0392b; margin-bottom: 4px; }
+  .qa-q::before { content: "Q. "; }
+  .qa-a { color: #333; padding-left: 18px; }
+  .qa-a::before { content: "A. "; font-weight: 700; color: #1565c0; }
+
+  .log-sample {
+    background: #0f1117;
+    color: #6eb5ff;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 10px 0;
+  }
+  .log-sample .s { color: #3ddc84; }
+  .log-sample .w { color: #f5a623; }
+  .log-sample .e { color: #ff5f5f; }
+
+  .ver { color: #999; font-size: 12px; margin-top: 60px; text-align: right; }
+
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 3px; }
+
+  @media print {
+    body { background: #fff; }
+    .wrap { padding: 20px; }
+    h2 { page-break-before: always; }
+    h2:first-of-type { page-break-before: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>SA 스마트스토어 자동화 <span class="badge">v2.14.0</span></h1>
+  <p class="subtitle">스마트스토어 계정 전환 및 퍼센티 상품 복사·업로드 자동화 크롬 확장 프로그램 사용 설명서</p>
+
+  <!-- ───────────────────────────────── -->
+  <h2>1. 프로그램 개요</h2>
+
+  <p>이 확장 프로그램은 여러 스마트스토어 계정의 퍼센티 상품 작업을 자동으로 처리합니다.<br>
+  엑셀 파일에 계정 정보를 입력하면, 아래 4단계를 계정마다 자동 반복합니다.</p>
+
+  <div class="flow">
+    <div class="flow-item">탭1 — 스마트스토어 로그인</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-item">탭2 — 등록상품 복사(셔플러)</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-item">탭3 — 신규상품 이름수정·그룹이동</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-item">탭4 — 마켓 업로드</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-item">다음 계정 반복</div>
+  </div>
+
+  <table>
+    <tr><th>탭</th><th>작업 내용</th></tr>
+    <tr><td>탭1</td><td>스마트스토어 로그인 / 2단계 이메일 인증 자동 처리 / 로그아웃</td></tr>
+    <tr><td>탭2</td><td>퍼센티 등록상품 날짜 필터 → 상품 복사(그룹1로 이동)</td></tr>
+    <tr><td>탭3</td><td>신규상품 이름에서 숫자 제거 → 그룹1 → 그룹2로 이동</td></tr>
+    <tr><td>탭4</td><td>그룹2 상품 전체 네이버 마켓 업로드</td></tr>
+  </table>
+
+  <!-- ───────────────────────────────── -->
+  <h2>2. 설치 방법</h2>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">1</span> 압축 파일 풀기</div>
+    <div class="step-desc">
+      <p>받은 <b>SA_스마트스토어_자동화_v2.14.0.zip</b> 파일을 원하는 폴더에 압축 해제합니다.</p>
+      <div class="info-box">⚠ 폴더 위치는 이후 변경하지 마세요. 변경하면 확장 프로그램이 작동하지 않습니다.</div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">2</span> 크롬 확장 프로그램 개발자 모드 켜기</div>
+    <div class="step-desc">
+      <ol>
+        <li>크롬 주소창에 <b>chrome://extensions/</b> 입력 후 Enter</li>
+        <li>우측 상단 <b>개발자 모드</b> 토글을 켭니다 (파란색)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">3</span> 확장 프로그램 불러오기</div>
+    <div class="step-desc">
+      <ol>
+        <li><b>압축 해제된 확장 프로그램 로드</b> 버튼 클릭</li>
+        <li>압축 해제한 폴더(manifest.json이 있는 폴더) 선택</li>
+        <li><b>SA 스마트스토어 자동화</b>가 목록에 나타나면 설치 완료</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">4</span> 사이드 패널 고정하기 (최초 1회)</div>
+    <div class="step-desc">
+      <ol>
+        <li>크롬 우측 상단 퍼즐 아이콘(🧩) 클릭</li>
+        <li><b>SA 스마트스토어 자동화</b> 옆 핀 아이콘 클릭하여 고정</li>
+        <li>주소창 우측 로봇 아이콘(🤖)을 클릭하면 사이드 패널이 열립니다</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>3. 엑셀 계정 파일 작성 방법</h2>
+
+  <p>폴더 안의 <b>계정양식.xlsx</b> 파일을 열어 아래 형식에 맞게 작성합니다.</p>
+
+  <table class="excel-table">
+    <tr>
+      <th>A열</th><th>B열</th><th>C열</th><th>D열</th><th>E열</th><th>F열</th><th>G열</th>
+    </tr>
+    <tr>
+      <td>스마트스토어 ID</td>
+      <td>스마트스토어 PW</td>
+      <td>퍼센티 ID</td>
+      <td>퍼센티 PW</td>
+      <td>스토어명 (선택)</td>
+      <td>그룹1</td>
+      <td>그룹2</td>
+    </tr>
+    <tr>
+      <td>mystore123</td>
+      <td>password!</td>
+      <td>percenty@email.com</td>
+      <td>pw1234</td>
+      <td>나의 스토어</td>
+      <td>4번</td>
+      <td>5번</td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <b>주의사항</b><br>
+    • 1행은 컬럼 제목입니다. <b>2행부터</b> 실제 계정을 입력하세요.<br>
+    • B열(스마트스토어 PW)을 비워두면 <b>브라우저 저장 비밀번호</b>로 자동 로그인합니다.<br>
+    • F열(그룹1): 탭2에서 복사된 상품이 도착하는 그룹 / 탭3에서 이름 수정 대상 그룹<br>
+    • G열(그룹2): 탭3에서 이동할 목적 그룹 / 탭4에서 업로드할 그룹<br>
+    • 그룹명은 퍼센티의 실제 그룹 이름과 <b>정확히 일치</b>해야 합니다 (예: "4번", "8번")
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>4. 사이드 패널 사용 방법</h2>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">1</span> 날짜 / 페이지 설정</div>
+    <div class="step-desc">
+      <table>
+        <tr><th>설정</th><th>설명</th><th>기본값</th></tr>
+        <tr><td>기간 (시작~종료)</td><td>탭2에서 복사할 상품의 등록 날짜 범위</td><td>오늘</td></tr>
+        <tr><td>셔플러 페이지</td><td>탭2에서 처리할 페이지 수</td><td>2</td></tr>
+        <tr><td>옵티마이저 페이지</td><td>탭3 그룹 이동 반복 횟수 (페이지당 1회)</td><td>2</td></tr>
+      </table>
+      <div class="info-box">실제 페이지 수가 설정값보다 적으면 실제 페이지 수 기준으로 자동 조정됩니다.</div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">2</span> 엑셀 파일 로드</div>
+    <div class="step-desc">
+      <ol>
+        <li><b>📂 엑셀 파일 클릭하여 선택</b> 영역 클릭</li>
+        <li>작성한 계정 엑셀 파일 선택</li>
+        <li>상태창에 <b>"N개 계정 로드 완료"</b> 표시되면 완료</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">3</span> 자동화 시작</div>
+    <div class="step-desc">
+      <ol>
+        <li>퍼센티(percenty.co.kr) 탭이 열려 있는지 확인합니다</li>
+        <li><b>▶ 시작</b> 버튼 클릭</li>
+        <li>상태창과 로그에서 진행 현황을 확인합니다</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">4</span> 버튼 기능</div>
+    <div class="step-desc">
+      <table>
+        <tr><th>버튼</th><th>기능</th></tr>
+        <tr><td>▶ 시작</td><td>자동화 시작. 엑셀 로드 후 활성화됨</td></tr>
+        <tr><td>■ 정지</td><td>즉시 자동화 중단</td></tr>
+        <tr><td>↺ 리셋</td><td>모든 계정 상태를 '대기'로 초기화</td></tr>
+        <tr><td>⏸ 일시정지</td><td>현재 단계 완료 후 일시 중지</td></tr>
+        <tr><td>▶ 재시작</td><td>일시정지 해제 후 이어서 진행</td></tr>
+        <tr><td>복사</td><td>실행 로그 전체를 클립보드에 복사</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>5. 정상 실행 로그 예시</h2>
+
+  <div class="log-sample">
+<span class="s">[success]</span> 자동화 시작 | mystore123 | 2026-04-02~2026-04-02<br>
+[info] 탭1: 로그인 시도<br>
+<span class="s">[success]</span> 로그인 성공<br>
+[info] 탭2: 날짜 필터 적용<br>
+[info] 실제 페이지 2p — 설정(2p)과 동일<br>
+[info] 총 47개 — 처리 시작<br>
+<span class="s">[success]</span> 탭2 완료 (47개 복사)<br>
+[info] 탭3 Phase1: 전체 상품 이름 수정 시작<br>
+<span class="s">[success]</span> Phase1 완료 — 총 47개 이름 수정<br>
+[info] Phase2 1/2회차 — 1페이지로 초기화 중...<br>
+<span class="s">[success]</span> 이동 완료 (1/2회차, 누적 47개)<br>
+<span class="s">[success]</span> 탭3 완료 — 이름수정 47개, 그룹이동 47개<br>
+[info] 업로드 중: 30/47 업로드중<br>
+<span class="s">[success]</span> 업로드 완료: 모든 업로드 완료<br>
+<span class="s">[success]</span> 📊 수량 확인 | 복사:47 / 이름수정:47 / 그룹이동:47 / 업로드:47<br>
+<span class="s">[success]</span> 🎉 모든 계정 처리 완료!
+  </div>
+
+  <div class="success-box">
+    <b>수량 확인 로그</b>: 복사 / 이름수정 / 그룹이동 / 업로드 숫자가 모두 같으면 정상입니다.
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>6. 2단계 인증(이메일) 자동 처리</h2>
+
+  <p>스마트스토어 로그인 시 <b>2단계 인증 (이메일로 인증)</b> 화면이 나타나면 자동으로 처리합니다.</p>
+
+  <div class="step-box" style="border-color:#90aae0">
+    <div class="step-title" style="color:#1a3a6b">자동 처리 흐름</div>
+    <div class="step-desc">
+      <ol>
+        <li>"이메일로 인증" 섹션 확인</li>
+        <li><b>인증 버튼</b> 클릭 → 네이버 메일로 인증 코드 발송</li>
+        <li>네이버 메일 탭 자동으로 열어 <b>6자리 인증 코드</b> 추출</li>
+        <li>코드 입력란에 자동 입력</li>
+        <li><b>확인 버튼</b> 클릭 → 로그인 완료</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    인증 코드 메일이 오지 않거나 자동 처리에 실패하면,<br>
+    <b>3분 안에 수동으로 인증을 완료</b>하면 자동화가 계속 진행됩니다.
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>7. 자주 묻는 질문 (FAQ)</h2>
+
+  <div class="qa-item">
+    <div class="qa-q">퍼센티 탭이 자동으로 열리지 않아요</div>
+    <div class="qa-a">자동화 시작 전에 퍼센티(percenty.co.kr)에 미리 로그인된 탭을 열어두세요.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q">그룹 이름이 달라서 그룹 이동이 안 돼요</div>
+    <div class="qa-a">엑셀 F열/G열의 그룹명이 퍼센티 실제 그룹 이름과 정확히 같아야 합니다.
+    퍼센티 신규상품 페이지에서 그룹 탭의 이름을 복사해서 사용하세요.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q">업로드 수량이 복사 수량보다 적어요</div>
+    <div class="qa-a">로그 하단의 📊 수량 확인에서 어느 단계에서 누락됐는지 확인하세요.
+    그룹이동 수가 적으면 옵티마이저 페이지 수를 늘려보세요.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q">버전을 업데이트하려면 어떻게 하나요?</div>
+    <div class="qa-a">새 버전 zip 파일을 받아 같은 폴더에 덮어쓴 뒤, chrome://extensions/ 에서 새로고침(↺) 버튼을 클릭하세요.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q">자동화 중 오류가 발생했어요</div>
+    <div class="qa-a">로그의 빨간 [error] 메시지를 확인하세요. ↺ 리셋 후 다시 시작하거나,
+    해당 계정만 수동으로 처리 후 다음 계정부터 재시작할 수 있습니다.</div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q">중간에 멈추고 싶어요</div>
+    <div class="qa-a">⏸ 일시정지 버튼으로 현재 단계 완료 후 멈출 수 있습니다. ▶ 재시작으로 이어서 진행됩니다.
+    완전히 종료하려면 ■ 정지를 누르세요.</div>
+  </div>
+
+  <!-- ───────────────────────────────── -->
+  <h2>8. 주의사항 및 권장 환경</h2>
+
+  <ul>
+    <li>브라우저: <b>Google Chrome</b> (최신 버전 권장)</li>
+    <li>자동화 실행 중 <b>퍼센티 탭을 닫거나 다른 사이트로 이동하지 마세요</b></li>
+    <li>자동화 중 컴퓨터가 절전 모드로 전환되지 않도록 설정하세요</li>
+    <li>여러 계정 처리 시 인터넷 연결이 안정적인 환경에서 사용하세요</li>
+    <li>퍼센티 그룹 설정은 사전에 완료되어 있어야 합니다 (그룹1, 그룹2)</li>
+  </ul>
+
+  <div class="ver">SA 스마트스토어 자동화 v2.14.0 &nbsp;|&nbsp; 사용 설명서</div>
+</div>
+</body>
+</html>

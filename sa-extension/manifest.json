@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "SA 스마트스토어 자동화",
+  "version": "2.15.0",
+  "description": "스마트스토어 계정 전환 및 퍼센티 업로드 자동화",
+
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "activeTab",
+    "sidePanel",
+    "alarms"
+  ],
+
+  "host_permissions": [
+    "https://sell.smartstore.naver.com/*",
+    "https://nid.naver.com/*",
+    "https://accounts.commerce.naver.com/*",
+    "https://percenty.co.kr/*",
+    "https://www.percenty.co.kr/*"
+  ],
+
+  "background": {
+    "service_worker": "background/background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://sell.smartstore.naver.com/*",
+        "https://accounts.commerce.naver.com/*"
+      ],
+      "js": ["content/tab1_content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://percenty.co.kr/*",
+        "https://www.percenty.co.kr/*"
+      ],
+      "js": ["content/percenty_content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_icon": {
+      "16":  "assets/icon16.png",
+      "48":  "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+
+  "side_panel": {
+    "default_path": "popup/popup.html"
+  },
+
+  "icons": {
+    "16":  "assets/icon16.png",
+    "48":  "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+}
