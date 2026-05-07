@@ -54,15 +54,14 @@ def fetch_stock(code: str) -> dict:
 
 
 def push_ntfy(topic: str, title: str, message: str, priority: str = "default") -> None:
-    url = f"{NTFY_SERVER}/{topic}"
+    payload = json.dumps(
+        {"topic": topic, "title": title, "message": message, "priority": priority},
+        ensure_ascii=False,
+    ).encode("utf-8")
     req = urllib.request.Request(
-        url,
-        data=message.encode("utf-8"),
-        headers={
-            "Title": title.encode("utf-8").decode("latin-1", errors="replace"),
-            "Priority": priority,
-            "Content-Type": "text/plain; charset=utf-8",
-        },
+        NTFY_SERVER,
+        data=payload,
+        headers={"Content-Type": "application/json; charset=utf-8"},
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=10) as resp:
@@ -100,7 +99,7 @@ def main() -> int:
 
     try:
         data = fetch_stock(CODE)
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
+    except Exception as exc:
         try:
             push_ntfy(NTFY_TOPIC, f"{CODE} 조회 실패", f"{type(exc).__name__}: {exc}", priority="low")
         except Exception:
