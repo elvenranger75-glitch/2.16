@@ -5,9 +5,11 @@ import urllib.error
 import urllib.request
 
 CODE = os.environ.get("STOCK_CODE", "008060")
-NTFY_TOPIC = os.environ.get("NTFY_TOPIC")
-NTFY_SERVER = os.environ.get("NTFY_SERVER", "https://ntfy.sh")
+NTFY_TOPIC = (os.environ.get("NTFY_TOPIC") or "").strip()
+NTFY_SERVER = (os.environ.get("NTFY_SERVER") or "https://ntfy.sh").rstrip("/")
 UA = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36"
+
+PRIORITY_MAP = {"min": 1, "low": 2, "default": 3, "high": 4, "max": 5}
 
 
 def _get_json(url: str, referer: str | None = None) -> dict:
@@ -55,18 +57,36 @@ def fetch_stock(code: str) -> dict:
 
 def push_ntfy(topic: str, title: str, message: str, priority: str = "default") -> None:
     payload = json.dumps(
-        {"topic": topic, "title": title, "message": message, "priority": priority},
+        {
+            "topic": topic,
+            "title": title,
+            "message": message,
+            "priority": PRIORITY_MAP.get(priority, 3),
+        },
         ensure_ascii=False,
     ).encode("utf-8")
     req = urllib.request.Request(
-        NTFY_SERVER,
+        NTFY_SERVER + "/",
         data=payload,
-        headers={"Content-Type": "application/json; charset=utf-8"},
+        headers={
+            "Content-Type": "application/json; charset=utf-8",
+            "User-Agent": "stock-notify/1.0 (+github actions)",
+        },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        if resp.status >= 300:
-            raise RuntimeError(f"ntfy push failed: {resp.status}")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status >= 300:
+                raise RuntimeError(f"ntfy push failed: {resp.status}")
+    except urllib.error.HTTPError as exc:
+        body = ""
+        try:
+            body = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            pass
+        raise RuntimeError(
+            f"ntfy push HTTP {exc.code}: {body[:300]} | topic={topic!r} server={NTFY_SERVER!r}"
+        ) from exc
 
 
 def format_message(data: dict) -> tuple[str, str]:
@@ -96,6 +116,17 @@ def main() -> int:
     if not NTFY_TOPIC:
         print("NTFY_TOPIC env var is required", file=sys.stderr)
         return 2
+
+    import re
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", NTFY_TOPIC):
+        print(
+            f"NTFY_TOPIC has invalid characters (allowed: A-Z a-z 0-9 _ -; max 64). "
+            f"Got len={len(NTFY_TOPIC)} repr={NTFY_TOPIC!r}",
+            file=sys.stderr,
+        )
+        return 2
+
+    print(f"using ntfy server={NTFY_SERVER} topic_len={len(NTFY_TOPIC)}")
 
     try:
         data = fetch_stock(CODE)
