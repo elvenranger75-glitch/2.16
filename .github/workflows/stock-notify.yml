@@ -1,0 +1,33 @@
+name: 대덕 008060 주가 알림
+
+on:
+  schedule:
+    # KST 평일 09:00~09:55 5분 간격 = UTC 월~금 00:00~00:55 (KST = UTC+9)
+    - cron: '*/5 0 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      stock_code:
+        description: '종목 코드 (기본 008060)'
+        required: false
+        default: '008060'
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 시세 조회 후 ntfy 푸시
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
+          STOCK_CODE: ${{ github.event.inputs.stock_code || '008060' }}
+        run: python scripts/notify_stock.py
