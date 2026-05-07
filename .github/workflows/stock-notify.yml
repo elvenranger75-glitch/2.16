@@ -1,4 +1,4 @@
-name: 대덕 008060 주가 알림
+name: 한국 주식 시세 알림
 
 on:
   schedule:
@@ -6,10 +6,14 @@ on:
     - cron: '*/5 0 * * 1-5'
   workflow_dispatch:
     inputs:
-      stock_code:
-        description: '종목 코드 (기본 008060)'
+      stock_codes:
+        description: '종목 코드 (콤마 구분, 비우면 vars.STOCK_CODES 또는 기본 008060)'
         required: false
-        default: '008060'
+        default: ''
+      skip_holidays:
+        description: '한국 공휴일/휴장일 스킵 (true/false)'
+        required: false
+        default: 'true'
 
 permissions:
   contents: read
@@ -24,10 +28,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
+
+      - name: holidays 패키지 설치
+        run: pip install --quiet holidays
 
       - name: 시세 조회 후 ntfy 푸시
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
-          STOCK_CODE: ${{ github.event.inputs.stock_code || '008060' }}
+          STOCK_CODES: ${{ github.event.inputs.stock_codes || vars.STOCK_CODES || '008060' }}
+          SKIP_HOLIDAYS: ${{ github.event.inputs.skip_holidays || 'true' }}
         run: python scripts/notify_stock.py

@@ -1,15 +1,49 @@
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-CODE = os.environ.get("STOCK_CODE", "008060")
 NTFY_TOPIC = (os.environ.get("NTFY_TOPIC") or "").strip()
 NTFY_SERVER = (os.environ.get("NTFY_SERVER") or "https://ntfy.sh").rstrip("/")
+SKIP_HOLIDAYS = (os.environ.get("SKIP_HOLIDAYS") or "true").lower() != "false"
 UA = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36"
 
 PRIORITY_MAP = {"min": 1, "low": 2, "default": 3, "high": 4, "max": 5}
+KST = ZoneInfo("Asia/Seoul")
+
+
+def parse_codes() -> list[str]:
+    raw = (
+        os.environ.get("STOCK_CODES")
+        or os.environ.get("STOCK_CODE")
+        or "008060"
+    )
+    return [c.strip() for c in raw.split(",") if c.strip()]
+
+
+def market_closed_reason(today) -> str:
+    weekday_kr = ["월", "화", "수", "목", "금", "토", "일"][today.weekday()]
+    if today.weekday() >= 5:
+        return f"주말 ({weekday_kr})"
+
+    try:
+        import holidays
+    except ImportError:
+        return ""
+
+    kr = holidays.country_holidays("KR", years=today.year)
+    if today in kr:
+        return f"공휴일: {kr.get(today)}"
+
+    if (today.month, today.day) == (5, 1):
+        return "근로자의 날 (KRX 휴장)"
+    if (today.month, today.day) == (12, 31):
+        return "연말 휴장"
+    return ""
 
 
 def _get_json(url: str, referer: str | None = None) -> dict:
@@ -89,7 +123,7 @@ def push_ntfy(topic: str, title: str, message: str, priority: str = "default") -
         ) from exc
 
 
-def format_message(data: dict) -> tuple[str, str]:
+def format_message(code: str, data: dict) -> tuple[str, str]:
     name = data.get("stockName") or data.get("itemName") or "종목"
     close = data.get("closePrice") or "?"
     change = str(data.get("compareToPreviousClosePrice") or "0")
@@ -100,15 +134,11 @@ def format_message(data: dict) -> tuple[str, str]:
     except ValueError:
         change_num = 0.0
 
-    if change_num > 0:
-        sign = "+"
-    elif change_num < 0:
-        sign = ""
-    else:
-        sign = ""
+    sign = "+" if change_num > 0 else ""
+    rate_sign = "+" if change_num > 0 else ""
 
-    title = f"{name} ({CODE})"
-    body = f"{close}원  {sign}{change} ({sign if change_num > 0 else ''}{rate}%)"
+    title = f"{name} ({code})"
+    body = f"{close}원  {sign}{change} ({rate_sign}{rate}%)"
     return title, body
 
 
@@ -117,7 +147,6 @@ def main() -> int:
         print("NTFY_TOPIC env var is required", file=sys.stderr)
         return 2
 
-    import re
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", NTFY_TOPIC):
         print(
             f"NTFY_TOPIC has invalid characters (allowed: A-Z a-z 0-9 _ -; max 64). "
@@ -126,22 +155,37 @@ def main() -> int:
         )
         return 2
 
-    print(f"using ntfy server={NTFY_SERVER} topic_len={len(NTFY_TOPIC)}")
+    today = datetime.now(KST).date()
+    if SKIP_HOLIDAYS:
+        reason = market_closed_reason(today)
+        if reason:
+            print(f"market closed today ({today.isoformat()}): {reason} — skipping all pushes")
+            return 0
 
-    try:
-        data = fetch_stock(CODE)
-    except Exception as exc:
+    codes = parse_codes()
+    print(f"using ntfy server={NTFY_SERVER} topic_len={len(NTFY_TOPIC)} codes={codes}")
+
+    failures: list[str] = []
+    for code in codes:
         try:
-            push_ntfy(NTFY_TOPIC, f"{CODE} 조회 실패", f"{type(exc).__name__}: {exc}", priority="low")
-        except Exception:
-            pass
-        print(f"fetch failed: {exc}", file=sys.stderr)
-        return 1
+            data = fetch_stock(code)
+            title, body = format_message(code, data)
+            push_ntfy(NTFY_TOPIC, title, body)
+            print(f"sent [{code}]: {title} | {body}")
+        except Exception as exc:
+            failures.append(f"{code}: {exc}")
+            print(f"failed [{code}]: {exc}", file=sys.stderr)
+            try:
+                push_ntfy(
+                    NTFY_TOPIC,
+                    f"{code} 조회 실패",
+                    f"{type(exc).__name__}: {exc}",
+                    priority="low",
+                )
+            except Exception as push_exc:
+                print(f"failure-notify also failed [{code}]: {push_exc}", file=sys.stderr)
 
-    title, body = format_message(data)
-    push_ntfy(NTFY_TOPIC, title, body)
-    print(f"sent: {title} | {body}")
-    return 0
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":
