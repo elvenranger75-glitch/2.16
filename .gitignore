@@ -6,3 +6,6 @@ __pycache__/
 .env
 .env.*
 .mcp.local.json
+
+# 브라우저 MCP 서버가 실행 중 남기는 디버그 산출물
+.playwright-mcp/

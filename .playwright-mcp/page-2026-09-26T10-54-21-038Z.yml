@@ -1,6 +1,0 @@
-- generic [active] [ref=e1]:
-  - heading "MCP 브라우저 실행 확인" [level=1] [ref=e2]
-  - paragraph [ref=e3]:
-    - text: 이 글씨가 보이면 브라우저가
-    - code [ref=e4]: 진짜로
-    - text: 떴다는 뜻입니다.
