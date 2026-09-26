@@ -94,9 +94,24 @@ add_keyed() {
   unset key
 }
 
+# 브라우저 계열 서버는 기본값으로 '설치된 Google Chrome' 을 찾습니다.
+# 크롬이 없거나(리눅스·서버·컨테이너) 다른 경로에 있으면 MCP_BROWSER_PATH 로 지정하세요.
+PW_ARGS=(npx @playwright/mcp@latest)
+CD_ARGS=(npx chrome-devtools-mcp@latest)
+if [ -n "${MCP_BROWSER_PATH:-}" ]; then
+  if [ ! -e "$MCP_BROWSER_PATH" ]; then
+    echo "!! MCP_BROWSER_PATH 경로가 없습니다: $MCP_BROWSER_PATH"
+    exit 1
+  fi
+  echo "브라우저 경로 지정: $MCP_BROWSER_PATH"
+  PW_ARGS+=(--executable-path "$MCP_BROWSER_PATH" --headless --isolated --no-sandbox)
+  CD_ARGS+=(--executablePath "$MCP_BROWSER_PATH" --isolated --headless --chromeArg=--no-sandbox)
+  echo
+fi
+
 # 키가 필요 없는 3개
-add_plain playwright      -- npx @playwright/mcp@latest
-add_plain chrome-devtools  -- npx chrome-devtools-mcp@latest
+add_plain playwright      -- "${PW_ARGS[@]}"
+add_plain chrome-devtools -- "${CD_ARGS[@]}"
 add_plain glif --transport http "https://glif.app/api/mcp"
 
 # 키가 필요한 2개
@@ -155,3 +170,9 @@ if [ -n "$PENDING" ]; then
 else
   echo "등록된 MCP 서버가 모두 Connected 입니다."
 fi
+
+echo
+echo "참고: Connected 는 '연결됐다'는 뜻일 뿐, 브라우저가 실제로 열리는지까지는"
+echo "      보장하지 않습니다. playwright / chrome-devtools 를 등록했다면 아래로"
+echo "      실제 동작을 확인하세요."
+echo "        python3 scripts/mcp_browser_smoke.py"

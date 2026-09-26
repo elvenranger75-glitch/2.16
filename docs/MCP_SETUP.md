@@ -56,13 +56,34 @@ claude mcp add perplexity --env PERPLEXITY_API_KEY="<키>" -- npx -y @perplexity
 claude mcp add firecrawl  --env FIRECRAWL_API_KEY="<키>"  -- npx -y firecrawl-mcp
 ```
 
-## 확인 방법
+## 확인 방법 — 2단계입니다
+
+**1단계. 연결 확인**
 
 ```bash
 claude mcp list
 ```
 
-각 줄 끝에 `✓ Connected` 가 보이면 성공입니다.
+각 줄 끝에 `✓ Connected` 가 보이면 등록·연결은 된 것입니다.
+
+**2단계. 브라우저가 진짜 열리는지 확인** ← 빠뜨리기 쉬운 부분
+
+`Connected` 는 **손만 맞잡은 상태**입니다. 브라우저 실행에 실패해도 `Connected` 로
+보이기 때문에, playwright·chrome-devtools 는 한 단계 더 확인해야 합니다.
+
+```bash
+python3 scripts/mcp_browser_smoke.py
+```
+
+임시 웹페이지를 로컬에 띄우고 MCP 서버에게 열게 시켜서, 페이지 제목을 되읽어
+오는 것까지 확인합니다. `통과` 두 개가 나오면 정말로 쓸 수 있는 상태입니다.
+
+크롬이 기본 위치에 없으면 경로를 직접 알려주세요.
+
+```bash
+MCP_BROWSER_PATH=/path/to/chrome python3 scripts/mcp_browser_smoke.py
+MCP_BROWSER_PATH=/path/to/chrome bash scripts/setup_mcp.sh   # 등록할 때도 동일
+```
 
 ## 잘 안 될 때
 
@@ -71,6 +92,8 @@ claude mcp list
 | `⏸ Needs authentication` (glif) | **정상입니다.** `claude` 실행 → `/mcp` → `glif` 선택 → Authenticate → 브라우저에서 glif.app 로그인·승인. 창이 안 열리면 터미널에 찍힌 URL을 직접 붙여넣으세요. |
 | `⏸ Pending approval` | `.mcp.json`(프로젝트 공용 설정)에 등록된 경우입니다. `claude` 를 한 번 실행해 신뢰 여부를 승인하세요. |
 | `✗ Failed to connect` | `npx @playwright/mcp@latest` 처럼 명령을 직접 실행해 에러 메시지를 확인하세요. 대개 Node 버전이 낮거나 패키지 다운로드가 막힌 경우입니다. |
+| `Connected` 인데 브라우저가 안 열림 | **가장 흔한 함정입니다.** 두 서버는 기본적으로 설치된 **Google Chrome** 을 찾습니다. 크롬이 없으면 `Chromium distribution 'chrome' is not found` / `Could not find Google Chrome executable` 오류가 납니다. 크롬을 설치하거나 `MCP_BROWSER_PATH` 로 경로를 지정하세요. |
+| `Chromium sandboxing failed!` | 서버·컨테이너 환경입니다. `MCP_BROWSER_PATH` 를 지정하면 스크립트가 `--no-sandbox` 를 자동으로 붙입니다. |
 | `ERR_PROXY_TUNNEL: 403` | 회사 방화벽·프록시가 도메인을 막고 있습니다. `glif.app`, `api.perplexity.ai`, `api.firecrawl.dev` 를 허용 목록에 넣어야 합니다. |
 | 키 관련 401/403 | `claude mcp remove <이름>` 후 올바른 키로 다시 등록하세요. |
 
