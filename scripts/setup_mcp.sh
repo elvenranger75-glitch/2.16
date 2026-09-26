@@ -112,8 +112,13 @@ VERIFY_RAW="$(claude mcp list 2>&1)"
 printf '%s\n' "$VERIFY_RAW"
 echo
 
-NOT_CONNECTED="$(printf '%s\n' "$VERIFY_RAW" \
-  | grep -E '^[A-Za-z0-9_.-]+:' | grep -v 'Connected' || true)"
+SERVER_LINES="$(printf '%s\n' "$VERIFY_RAW" | grep -E '^[A-Za-z0-9_.-]+:' || true)"
+# 인증/승인 대기는 '정상 진행 중'이므로 실패로 세지 않습니다.
+PENDING="$(printf '%s\n' "$SERVER_LINES" \
+  | grep -E 'Needs authentication|Pending approval|Authenticat' || true)"
+BROKEN="$(printf '%s\n' "$SERVER_LINES" \
+  | grep -v 'Connected' \
+  | grep -vE 'Needs authentication|Pending approval|Authenticat' || true)"
 
 # --------------------------------------------------------------------- 요약
 hr; echo "요약"; hr
@@ -122,18 +127,31 @@ echo "건너뜀    : ${SKIPPED[*]:-(없음)}"
 echo "등록 실패 : ${FAILED[*]:-(없음)}"
 echo
 
-if [ -n "$NOT_CONNECTED" ]; then
-  echo "아직 Connected 가 아닌 항목:"
-  printf '%s\n' "$NOT_CONNECTED" | sed 's/^/  /'
+if [ -n "$PENDING" ]; then
+  echo "[할 일] 브라우저 로그인이 남은 항목 (오류가 아닙니다):"
+  printf '%s\n' "$PENDING" | sed 's/^/  /'
+  echo
+  echo "  'claude' 실행 -> /mcp -> 해당 서버 선택 -> Authenticate 를 누르면"
+  echo "  브라우저가 열립니다. 창이 안 열리면 터미널에 표시된 URL 을 직접 붙여넣으세요."
+  echo "  (glif 는 이 단계가 정상 절차입니다.)"
+  echo
+fi
+
+if [ -n "$BROKEN" ]; then
+  echo "[오류] 연결하지 못한 항목:"
+  printf '%s\n' "$BROKEN" | sed 's/^/  /'
   echo
   echo "자주 있는 원인"
-  echo "  - glif : 브라우저 로그인(OAuth)이 필요합니다. 'claude' 실행 후 /mcp 에서"
-  echo "           glif 를 골라 Authenticate 하면 브라우저가 열립니다. 인증 전까지"
-  echo "           'Needs authentication' 으로 보이는 것이 정상입니다."
   echo "  - 403 / ERR_PROXY_TUNNEL : 방화벽·프록시가 해당 도메인을 막고 있습니다."
+  echo "                             glif.app / api.perplexity.ai / api.firecrawl.dev 허용 필요."
   echo "  - Failed to connect      : 'npx <패키지>' 를 직접 실행해 오류 메시지를 확인하세요."
-  echo "  - 키 오류                : claude mcp remove <이름> 후 올바른 키로 다시 추가하세요."
+  echo "  - Pending approval       : 'claude' 를 한 번 실행해 프로젝트 설정을 승인하세요."
+  echo "  - 키 오류(401/403)       : claude mcp remove <이름> 후 올바른 키로 다시 추가하세요."
   exit 1
 fi
 
-echo "5개 모두 Connected 입니다."
+if [ -n "$PENDING" ]; then
+  echo "연결 실패는 없습니다. 위 항목만 브라우저에서 로그인하면 끝입니다."
+else
+  echo "등록된 MCP 서버가 모두 Connected 입니다."
+fi
