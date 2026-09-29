@@ -48,6 +48,15 @@ def find_browser():
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
     ]
+    if sys.platform == "win32":
+        for base in (os.environ.get("PROGRAMFILES"),
+                     os.environ.get("PROGRAMFILES(X86)"),
+                     os.environ.get("LOCALAPPDATA")):
+            if base:
+                candidates.append(
+                    os.path.join(base, "Google", "Chrome", "Application", "chrome.exe"))
+                candidates.append(
+                    os.path.join(base, "Microsoft", "Edge", "Application", "msedge.exe"))
     pw = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
     if pw:
         candidates.insert(0, os.path.join(pw, "chromium"))
@@ -169,9 +178,12 @@ def main():
     srv, port = serve(tmp)
     url = f"http://127.0.0.1:{port}/probe.html"
 
-    pw = ["npx", "@playwright/mcp@latest", "--headless", "--isolated", "--no-sandbox"]
-    cd = ["npx", "chrome-devtools-mcp@latest", "--isolated", "--headless",
-          "--chromeArg=--no-sandbox"]
+    # 윈도우의 npx 는 npx.cmd 라서 'cmd /c' 를 거쳐야 실행됩니다.
+    npx = ["cmd", "/c", "npx"] if sys.platform == "win32" else ["npx"]
+
+    pw = npx + ["@playwright/mcp@latest", "--headless", "--isolated", "--no-sandbox"]
+    cd = npx + ["chrome-devtools-mcp@latest", "--isolated", "--headless",
+                "--chromeArg=--no-sandbox"]
     if browser:
         pw += ["--executable-path", browser]
         cd += ["--executablePath", browser]

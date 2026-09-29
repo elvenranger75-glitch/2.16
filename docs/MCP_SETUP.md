@@ -26,11 +26,22 @@
 
 ## 설치
 
-프로젝트 폴더에서 아래 한 줄을 실행합니다.
+프로젝트 폴더에서 아래 한 줄을 실행합니다. **쓰는 운영체제에 맞는 쪽**을 고르세요.
+
+**윈도우 (PowerShell)**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup_mcp.ps1
+```
+
+**맥 / 리눅스**
 
 ```bash
 bash scripts/setup_mcp.sh
 ```
+
+> 윈도우 PowerShell 에서는 `&&` 로 명령을 이어붙일 수 없고 `bash` 도 없습니다.
+> 명령은 한 줄에 하나씩 실행하세요.
 
 스크립트가 알아서 이렇게 합니다.
 
@@ -42,11 +53,21 @@ bash scripts/setup_mcp.sh
 
 키를 미리 환경변수로 넘기면 질문 없이 진행됩니다.
 
+```powershell
+# 윈도우
+$env:PERPLEXITY_API_KEY='...'
+$env:FIRECRAWL_API_KEY='...'
+powershell -ExecutionPolicy Bypass -File scripts\setup_mcp.ps1
+```
+
 ```bash
+# 맥 / 리눅스
 PERPLEXITY_API_KEY='...' FIRECRAWL_API_KEY='...' bash scripts/setup_mcp.sh
 ```
 
 ## 스크립트가 실행하는 명령 (직접 하고 싶을 때)
+
+맥 / 리눅스:
 
 ```bash
 claude mcp add playwright      -- npx @playwright/mcp@latest
@@ -54,6 +75,16 @@ claude mcp add chrome-devtools -- npx chrome-devtools-mcp@latest
 claude mcp add --transport http glif "https://glif.app/api/mcp"
 claude mcp add perplexity --env PERPLEXITY_API_KEY="<키>" -- npx -y @perplexity-ai/mcp-server
 claude mcp add firecrawl  --env FIRECRAWL_API_KEY="<키>"  -- npx -y firecrawl-mcp
+```
+
+윈도우에서는 `npx` 앞에 **`cmd /c` 를 꼭 붙여야** 서버가 뜹니다.
+
+```powershell
+claude mcp add playwright      -- cmd /c npx @playwright/mcp@latest
+claude mcp add chrome-devtools -- cmd /c npx chrome-devtools-mcp@latest
+claude mcp add --transport http glif "https://glif.app/api/mcp"
+claude mcp add perplexity --env PERPLEXITY_API_KEY="<키>" -- cmd /c npx -y @perplexity-ai/mcp-server
+claude mcp add firecrawl  --env FIRECRAWL_API_KEY="<키>"  -- cmd /c npx -y firecrawl-mcp
 ```
 
 ## 확인 방법 — 2단계입니다
@@ -71,8 +102,12 @@ claude mcp list
 `Connected` 는 **손만 맞잡은 상태**입니다. 브라우저 실행에 실패해도 `Connected` 로
 보이기 때문에, playwright·chrome-devtools 는 한 단계 더 확인해야 합니다.
 
+```powershell
+python scripts\mcp_browser_smoke.py     # 윈도우
+```
+
 ```bash
-python3 scripts/mcp_browser_smoke.py
+python3 scripts/mcp_browser_smoke.py    # 맥 / 리눅스
 ```
 
 임시 웹페이지를 로컬에 띄우고 MCP 서버에게 열게 시켜서, 페이지 제목을 되읽어
@@ -80,7 +115,15 @@ python3 scripts/mcp_browser_smoke.py
 
 크롬이 기본 위치에 없으면 경로를 직접 알려주세요.
 
+```powershell
+# 윈도우
+$env:MCP_BROWSER_PATH='C:\Program Files\Google\Chrome\Application\chrome.exe'
+python scripts\mcp_browser_smoke.py
+powershell -ExecutionPolicy Bypass -File scripts\setup_mcp.ps1   # 등록할 때도 동일
+```
+
 ```bash
+# 맥 / 리눅스
 MCP_BROWSER_PATH=/path/to/chrome python3 scripts/mcp_browser_smoke.py
 MCP_BROWSER_PATH=/path/to/chrome bash scripts/setup_mcp.sh   # 등록할 때도 동일
 ```
@@ -89,6 +132,10 @@ MCP_BROWSER_PATH=/path/to/chrome bash scripts/setup_mcp.sh   # 등록할 때도 
 
 | 표시 | 원인과 해결 |
 | --- | --- |
+| `'bash' 용어가 ... 인식되지 않습니다` | 윈도우입니다. `.sh` 대신 `scripts\setup_mcp.ps1` 을 쓰세요. |
+| `'&&' 토큰은 이 버전에서 올바른 문 구분 기호가 아닙니다` | 윈도우 PowerShell 5.1 입니다. 명령을 한 줄씩 나눠 실행하세요. |
+| `Python was not found` | 윈도우는 `python3` 가 아니라 `python` 입니다. 없으면 https://www.python.org 에서 설치(설치 시 *Add to PATH* 체크). |
+| `'claude' 용어가 ... 인식되지 않습니다` | Claude Code 미설치이거나 PATH 미반영입니다. 설치 후 PowerShell 창을 **새로 열어** 다시 실행하세요. |
 | `⏸ Needs authentication` (glif) | **정상입니다.** `claude` 실행 → `/mcp` → `glif` 선택 → Authenticate → 브라우저에서 glif.app 로그인·승인. 창이 안 열리면 터미널에 찍힌 URL을 직접 붙여넣으세요. |
 | `⏸ Pending approval` | `.mcp.json`(프로젝트 공용 설정)에 등록된 경우입니다. `claude` 를 한 번 실행해 신뢰 여부를 승인하세요. |
 | `✗ Failed to connect` | `npx @playwright/mcp@latest` 처럼 명령을 직접 실행해 에러 메시지를 확인하세요. 대개 Node 버전이 낮거나 패키지 다운로드가 막힌 경우입니다. |
